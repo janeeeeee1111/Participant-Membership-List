@@ -1,0 +1,169 @@
+<html>
+<head>
+  <title>Participant Membership List</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Participant Membership List</h1>
+
+  <form id="membershipForm">
+    <label for="nameInput">Name:</label>
+    <input type="text" id="nameInput" required><br><br>
+
+    <label for="facebookInput">Facebook Name:</label>
+    <input type="text" id="facebookInput" required><br><br>
+
+    <label for="shirtSizeInput">T-shirt Size:</label>
+    <select id="shirtSizeInput" required>
+      <option value="">Select Size</option>
+      <option value="S">Small</option>
+      <option value="M">Medium</option>
+      <option value="L">Large</option>
+    </select><br><br>
+
+    <label for="piecesInput">Number of Pieces:</label>
+    <input type="number" id="piecesInput" required><br><br>
+
+    <label for="batchInput">Batch:</label>
+    <input type="number" id="batchInput" required><br><br>
+
+    <button type="submit" id="addButton" disabled>Add Participant</button>
+    <button type="button" onclick="saveData()" id="saveButton" disabled>Save</button>
+  </form>
+
+  <h2>Membership List</h2>
+
+  <table id="membershipTable">
+    <tr>
+      <th>Name</th>
+      <th>Facebook Name</th>
+      <th>T-shirt Size</th>
+      <th>Number of Pieces</th>
+      <th>Batch</th>
+      <th>Action</th>
+    </tr>
+  </table>
+
+  <script>
+    var participants = [];
+
+    // Retrieve saved data from localStorage
+    var savedParticipants = localStorage.getItem("participants");
+    if (savedParticipants) {
+      participants = JSON.parse(savedParticipants);
+      updateTable();
+    }
+
+    document.getElementById("membershipForm").addEventListener("input", function() {
+      var name = document.getElementById("nameInput").value;
+      var facebook = document.getElementById("facebookInput").value;
+      var shirtSize = document.getElementById("shirtSizeInput").value;
+      var pieces = document.getElementById("piecesInput").value;
+      var batch = parseInt(document.getElementById("batchInput").value);
+
+      var addButton = document.getElementById("addButton");
+      var saveButton = document.getElementById("saveButton");
+
+      if (name && facebook && shirtSize && pieces && batch) {
+        addButton.disabled = false;
+        saveButton.disabled = false;
+      } else {
+        addButton.disabled = true;
+        saveButton.disabled = true;
+      }
+    });
+
+    document.getElementById("membershipForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent form submission
+
+      // Get form values
+      var name = document.getElementById("nameInput").value;
+      var facebook = document.getElementById("facebookInput").value;
+      var shirtSize = document.getElementById("shirtSizeInput").value;
+      var pieces = document.getElementById("piecesInput").value;
+      var batch = parseInt(document.getElementById("batchInput").value);
+
+      // Create participant object
+      var participant = {
+        name: name,
+        facebook: facebook,
+        shirtSize: shirtSize,
+        pieces: pieces,
+        batch: batch
+      };
+
+      // Add participant to the list
+      participants.push(participant);
+
+      // Clear form inputs
+      document.getElementById("nameInput").value = "";
+      document.getElementById("facebookInput").value = "";
+      document.getElementById("shirtSizeInput").value = "";
+      document.getElementById("piecesInput").value = "";
+      document.getElementById("batchInput").value = "";
+
+      // Sort participants by batch
+      participants.sort(function(a, b) {
+        return a.batch - b.batch;
+      });
+
+      // Update the membership table
+      updateTable();
+
+      // Disable the "Add Participant" button again
+      document.getElementById("addButton").disabled = true;
+
+      // Save the updated participants array to localStorage
+      saveData();
+    });
+
+    function updateTable() {
+      var table = document.getElementById("membershipTable");
+      table.innerHTML = "<tr><th>Name</th><th>Facebook Name</th><th>T-shirt Size</th><th>Number of Pieces</th><th>Batch</th><th>Action</th></tr>";
+
+      for (var i = 0; i < participants.length; i++) {
+        var participant = participants[i];
+
+        var newRow = table.insertRow();
+        var nameCell = newRow.insertCell();
+        var facebookCell = newRow.insertCell();
+        var shirtSizeCell = newRow.insertCell();
+        var piecesCell = newRow.insertCell();
+        var batchCell = newRow.insertCell();
+        var actionCell = newRow.insertCell();
+
+        nameCell.textContent = participant.name;
+        facebookCell.textContent = participant.facebook;
+        shirtSizeCell.textContent = participant.shirtSize;
+        piecesCell.textContent = participant.pieces;
+        batchCell.textContent = participant.batch;
+        actionCell.innerHTML = '<button onclick="deleteParticipant(' + i + ')">Delete</button>';
+      }
+    }
+
+    function deleteParticipant(index) {
+      participants.splice(index, 1);
+      updateTable();
+      saveData();
+    }
+
+    function saveData() {
+      localStorage.setItem("participants", JSON.stringify(participants));
+      document.getElementById("saveButton").textContent = "Saved!";
+    }
+  </script>
+</body>
+</html>
